@@ -23,26 +23,27 @@ void cpu_load_task(void *pvParameters)
 
 void task_logger(void *pvParameters)
 {
+    // Буфери для тексту
     static char task_list_buf[1024];
     static char runtime_buf[1024];
 
     while (1) {
-        printf("\n===== SYSTEM STATUS =====\n");
+        printf("\n===== SYSTEM STATUS (Every 5s) =====\n");
 
-        printf("\n-- Task List --\n");
-        printf("Name          State    Prio    Stack    Num\n");
+        // Оскільки ви увімкнули показ ядра в меню-конфігураторі, 
+        // vTaskList сама додасть колонку з номером ядра або символом 'X' (якщо без прив'язки)
+        printf("\n-- Task List (Name, State, Prio, Stack, Num, Core) --\n");
         vTaskList(task_list_buf);
         printf("%s\n", task_list_buf);
 
         printf("-- Runtime Stats (CPU usage) --\n");
-        printf("Name            Time        %%CPU\n");
+        printf("Name            Time            %%CPU\n");
         vTaskGetRunTimeStats(runtime_buf);
         printf("%s\n", runtime_buf);
 
-        printf("-- Core Info --\n");
-        printf("Logger running on core %d\n", xTaskGetCoreID(NULL));
-
-        printf("==========================\n");
+        printf("------------------------------------\n");
+        printf("Free Heap: %u bytes\n", (unsigned int)esp_get_free_heap_size());
+        printf("====================================\n");
 
         vTaskDelay(pdMS_TO_TICKS(5000));
     }

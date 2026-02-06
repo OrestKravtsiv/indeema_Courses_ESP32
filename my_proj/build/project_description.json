@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "my_proj",
-    "project_version":    "c1b604d-dirty",
+    "project_version":    "d569ef5-dirty",
     "project_path":       "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj",
     "idf_path":           "C:/Users/PC/esp/v5.5.2/esp-idf",
     "build_dir":          "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build",
