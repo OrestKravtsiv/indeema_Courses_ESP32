@@ -23,6 +23,17 @@ void cpu_load_task(void *pvParameters)
     }
 }
 
+void task_logger(void *pvParameters)
+{
+    char *buffer = malloc(512); // Allocate buffer for task list
+    while (1) {
+        vTaskList(buffer);
+        printf("Task List:\n%s", buffer);
+        // free(buffer);
+        vTaskDelay(pdMS_TO_TICKS(5000)); // Log every 5 seconds
+    }
+}
+
 void app_main(void)
 {
     static uint32_t task1_params[2] = {1000, 300}; // 1s period, 300ms load
@@ -30,4 +41,5 @@ void app_main(void)
 
     xTaskCreate(cpu_load_task, "CPU Load 1", 4096, task1_params, 5, NULL);
     xTaskCreate(cpu_load_task, "CPU Load 2", 4096, task2_params, 5, NULL);
+    xTaskCreate(task_logger, "Task Logger", 4096, NULL, 1, NULL);
 }
