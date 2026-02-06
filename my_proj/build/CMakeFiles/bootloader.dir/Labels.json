@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}
