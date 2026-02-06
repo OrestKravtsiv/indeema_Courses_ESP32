@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_timer.h"
@@ -10,14 +11,11 @@ void cpu_load_task(void *pvParameters)
 
     TickType_t last_wake = xTaskGetTickCount();
 
-    int counter = 0;
     while (1) {
         int64_t start = esp_timer_get_time();
         while ((esp_timer_get_time() - start) < load_ms * 1000) {
-            counter++; // Simulate CPU load
+            __asm__ volatile("nop");
         }
-
-        printf("Task: period=%lu ms, load=%lu ms, counter=%d\n", period_ms, load_ms, counter);
 
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(period_ms));
     }
@@ -25,21 +23,38 @@ void cpu_load_task(void *pvParameters)
 
 void task_logger(void *pvParameters)
 {
-    char *buffer = malloc(512); // Allocate buffer for task list
+    static char task_list_buf[1024];
+    static char runtime_buf[1024];
+
     while (1) {
-        vTaskList(buffer);
-        printf("Task List:\n%s", buffer);
-        // free(buffer);
-        vTaskDelay(pdMS_TO_TICKS(5000)); // Log every 5 seconds
+        printf("\n===== SYSTEM STATUS =====\n");
+
+        printf("\n-- Task List --\n");
+        printf("Name          State    Prio    Stack    Num\n");
+        vTaskList(task_list_buf);
+        printf("%s\n", task_list_buf);
+
+        printf("-- Runtime Stats (CPU usage) --\n");
+        printf("Name            Time        %%CPU\n");
+        vTaskGetRunTimeStats(runtime_buf);
+        printf("%s\n", runtime_buf);
+
+        printf("-- Core Info --\n");
+        printf("Logger running on core %d\n", xTaskGetCoreID(NULL));
+
+        printf("==========================\n");
+
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
 void app_main(void)
 {
-    static uint32_t task1_params[2] = {1000, 300}; // 1s period, 300ms load
-    static uint32_t task2_params[2] = {2000, 500}; // 2s period, 500ms load
+    static uint32_t task1_params[2] = {1000, 300};
+    static uint32_t task2_params[2] = {2000, 500};
 
-    xTaskCreate(cpu_load_task, "CPU Load 1", 4096, task1_params, 5, NULL);
-    xTaskCreate(cpu_load_task, "CPU Load 2", 4096, task2_params, 5, NULL);
-    xTaskCreate(task_logger, "Task Logger", 4096, NULL, 1, NULL);
+    xTaskCreatePinnedToCore(cpu_load_task, "CPU_Load_1", 4096, task1_params, 5, NULL, 0);
+    xTaskCreatePinnedToCore(cpu_load_task, "CPU_Load_2", 4096, task2_params, 5, NULL, 0);
+
+    xTaskCreatePinnedToCore(task_logger, "Task_Logger", 4096, NULL, 1, NULL, 1);
 }
