@@ -1,0 +1,16 @@
+Command: C:\Users\PC\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:\Users\PC\esp\v5.5.2\esp-idf\tools/idf_monitor.py -p socket://localhost:5555 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 C:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build\my_proj.elf C:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build\bootloader\bootloader.elf --force-color -m 'C:\Users\PC\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe' 'C:\Users\PC\esp\v5.5.2\esp-idf\tools\idf.py' '-B' 'c:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build'
+[0;33m--- esp-idf-monitor 1.9.0 on socket://localhost:5555 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[1;31m--- Error: read failed: [WinError 10054] An existing connection was forcibly closed by the remote host[0m
+[0;33m--- Waiting for the device to reconnect[0m[0;33m--- To exit from IDF monitor please use "Ctrl+]". Alternatively, you can use Ctrl+T Ctrl+X to exit.[0m
+[0;33m.[0m[0;33m[0m
+[0m
+Traceback (most recent call last):
+  File "C:\Users\PC\esp\v5.5.2\esp-idf\tools/idf_monitor.py", line 11, in <module>
+    sys.exit(subprocess.run([sys.executable, '-m', 'esp_idf_monitor'] + sys.argv[1:]).returncode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "subprocess.py", line 550, in run
+  File "subprocess.py", line 1199, in communicate
+  File "subprocess.py", line 1262, in wait
+  File "subprocess.py", line 1543, in _wait
+KeyboardInterrupt

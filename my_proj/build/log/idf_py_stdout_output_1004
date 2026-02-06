@@ -1,0 +1,169 @@
+Command: C:\Users\PC\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:\Users\PC\esp\v5.5.2\esp-idf\tools/idf_monitor.py -p socket://localhost:5555 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 C:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build\my_proj.elf C:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build\bootloader\bootloader.elf --force-color -m 'C:\Users\PC\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe' 'C:\Users\PC\esp\v5.5.2\esp-idf\tools\idf.py' '-B' 'c:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build'
+[0;32mI (851) boot: chip revision: v3.0[0m
+[0;32mI (855) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (856) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (856) boot.esp32: SPI Flash Size : 2MB[0m
+[0;32mI (875) boot: Enabling RNG early entropy source...[0m
+[0;32mI (901) boot: Partition Table:[0m
+[0;32mI (901) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (902) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (903) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (904) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (915) boot: End of partition table[0m
+[0;32mI (1019) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=0971ch ( 38684) map[0m
+[0;32mI (1117) esp_image: segment 1: paddr=00019744 vaddr=3ffb0000 size=023e0h (  9184) load[0m
+[0;32mI (1159) esp_image: segment 2: paddr=0001bb2c vaddr=40080000 size=044ech ( 17644) load[0m
+[0;32mI (1207) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=0efa4h ( 61348) map[0m
+[0;32mI (1261) esp_image: segment 4: paddr=0002efcc vaddr=400844ec size=08ad0h ( 35536) load[0m
+[0;32mI (1310) esp_image: segment 5: paddr=00037aa4 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (1451) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (1451) boot: Disabling RNG early entropy source...[0m
+[0;32mI (1487) cpu_start: Multicore app[0m
+[0;32mI (2661) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (2668) cpu_start: Pro cpu start user code[0m
+[0;32mI (2669) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (2670) app_init: Application information:[0m
+[0;32mI (2671) app_init: Project name:     my_proj[0m
+[0;32mI (2671) app_init: App version:      7cc8760-dirty[0m
+[0;32mI (2672) app_init: Compile time:     Feb  6 2026 13:03:23[0m
+[0;32mI (2673) app_init: ELF file SHA256:  25236c99e...[0m
+[0;32mI (2673) app_init: ESP-IDF:          v5.5.2[0m
+[0;32mI (2674) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (2674) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (2675) efuse_init: Chip rev:         v3.0[0m
+[0;32mI (2678) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (2680) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (2681) heap_init: At 3FFB2CA8 len 0002D358 (180 KiB): DRAM[0m
+[0;32mI (2682) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (2683) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (2683) heap_init: At 4008CFBC len 00013044 (76 KiB): IRAM[0m
+[0;32mI (2804) spi_flash: detected chip: winbond[0m
+[0;32mI (2823) spi_flash: flash io: dio[0m
+[0;32mI (2859) main_task: Started on CPU0[0m
+[0;32mI (2879) main_task: Calling app_main()[0m
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
