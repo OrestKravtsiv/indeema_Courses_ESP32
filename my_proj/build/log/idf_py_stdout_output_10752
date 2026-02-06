@@ -1,0 +1,18 @@
+Command: ninja all
+[1/9] Performing build step for 'bootloader'
+[1/1] C:\Windows\system32\cmd.exe /C "cd /D C:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build\bootloader\esp-idf\esptool_py && C:\Users\PC\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Users/PC/esp/v5.5.2/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/bootloader/bootloader.bin"
+Bootloader binary size 0x5240 bytes. 0x2dc0 bytes (36%) free.
+[2/9] No install step for 'bootloader'
+[3/9] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/my_proj.c.obj
+[4/9] Completed 'bootloader'
+[5/9] Linking C static library esp-idf\main\libmain.a
+[6/9] Generating esp-idf/esp_system/ld/sections.ld
+[7/9] Linking CXX executable my_proj.elf
+[8/9] Generating binary image from built executable
+esptool.py v4.12.dev1
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/my_proj.bin
+[9/9] C:\Windows\system32\cmd.exe /C "cd /D C:\Files\uni\indeema\ESP\indeema_Courses_ESP32\my_proj\build\esp-idf\esptool_py && C:\Users\PC\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Users/PC/esp/v5.5.2/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/partition_table/partition-table.bin C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/my_proj.bin"
+my_proj.bin binary size 0x32200 bytes. Smallest app partition is 0x100000 bytes. 0xcde00 bytes (80%) free.
