@@ -159,5 +159,9 @@ $<TARGET_FILE:idf::touch_element>
 $<TARGET_FILE:idf::usb>
 $<TARGET_FILE:idf::wifi_provisioning>
 $<TARGET_FILE:__idf_json>
+$<TARGET_FILE:idf::espressif__led_strip>
+$<TARGET_FILE:idf::my_led>
+$<TARGET_FILE:__idf_espressif__led_strip>
 $<TARGET_FILE:idf::main>
+$<TARGET_FILE:__idf_my_led>
 $<TARGET_FILE:idf::my_comp>

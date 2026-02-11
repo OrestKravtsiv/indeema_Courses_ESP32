@@ -159,5 +159,9 @@ C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/touch_eleme
 C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/usb/libusb.a
 C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
 C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/json/libjson.a
+C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/espressif__led_strip/libespressif__led_strip.a
+C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/my_led/libmy_led.a
+C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/espressif__led_strip/libespressif__led_strip.a
 C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/main/libmain.a
+C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/my_led/libmy_led.a
 C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/my_comp/libmy_comp.a

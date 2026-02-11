@@ -564,6 +564,16 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/espressif__led_strip/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/my_led/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Files/uni/indeema/ESP/indeema_Courses_ESP32/my_proj/build/esp-idf/main/cmake_install.cmake")
 endif()
 

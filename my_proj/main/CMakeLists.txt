@@ -1,2 +1,3 @@
 idf_component_register(SRCS "my_proj.c"
-                    INCLUDE_DIRS ".")
+                    INCLUDE_DIRS "."
+                    REQUIRES my_led)

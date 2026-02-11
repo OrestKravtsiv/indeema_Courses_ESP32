@@ -3,6 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_timer.h"
+#include "my_led.h"
 
 void cpu_load_task(void *pvParameters)
 {
@@ -49,6 +50,13 @@ void task_logger(void *pvParameters)
     }
 }
 
+void task_led(void *pvParameters)
+{
+    led_strip_blink();
+    vTaskDelete(NULL); // Завершуємо задачу після тесту
+}
+
+
 void app_main(void)
 {
     static uint32_t task1_params[2] = {1000, 300};
@@ -58,4 +66,6 @@ void app_main(void)
     xTaskCreatePinnedToCore(cpu_load_task, "CPU_Load_2", 4096, task2_params, 5, NULL, 0);
 
     xTaskCreatePinnedToCore(task_logger, "Task_Logger", 4096, NULL, 1, NULL, 1);
+
+    xTaskCreate(task_led, "LED_Test", 4096, NULL, 1, NULL);
 }
