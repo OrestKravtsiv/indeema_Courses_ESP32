@@ -4,6 +4,7 @@
 #include "freertos/task.h"
 #include "esp_timer.h"
 #include "my_led.h"
+#include "my_joystick.h"
 
 void cpu_load_task(void *pvParameters)
 {
