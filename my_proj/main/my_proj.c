@@ -53,8 +53,15 @@ void task_logger(void *pvParameters)
 
 void task_led(void *pvParameters)
 {
-    led_strip_blink();
-    vTaskDelete(NULL); // Завершуємо задачу після тесту
+    led_strip = configure_led();
+    while (1) {
+        led_strip_set_color(led_strip, 255, 0, 0); // Червоний колір
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Затримка між тестами
+        led_strip_set_color(led_strip, 0, 255, 0); // Зелений колір
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Затримка між тестами
+        led_strip_set_color(led_strip, 0, 0, 255); // Синій колір
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Затримка між тестами
+    }
 }
 
 

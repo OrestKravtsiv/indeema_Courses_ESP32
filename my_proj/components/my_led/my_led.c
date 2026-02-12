@@ -1,21 +1,24 @@
 #include <stdio.h>
 #include "my_led.h"
 
+led_strip_handle_t led_strip = NULL;
+
+
 led_strip_handle_t configure_led(void)
 {
-/// LED strip common configuration
-led_strip_config_t strip_config = {
-    .strip_gpio_num = 48,  // The GPIO that connected to the LED strip's data line
-    .max_leds = 1,                 // The number of LEDs in the strip,
-    .led_model = LED_MODEL_WS2812, // LED strip model, it determines the bit timing
-    .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB, // The color component format is G-R-B
-    .flags = {
-        .invert_out = false, // don't invert the output signal
-    }
-};
+    /// LED strip common configuration
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = 48,  // The GPIO that connected to the LED strip's data line
+        .max_leds = 1   ,                 // The number of LEDs in the strip,
+        .led_model = LED_MODEL_WS2812, // LED strip model, it determines the bit timing
+        .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB, // The color component format is G-R-B
+        .flags = {
+            .invert_out = false, // don't invert the output signal
+        }
+    };
 
 
- // LED strip backend configuration: RMT
+    // LED strip backend configuration: RMT
     led_strip_rmt_config_t rmt_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
         .resolution_hz = LED_STRIP_RMT_RES_HZ, // RMT counter clock frequency
@@ -25,8 +28,6 @@ led_strip_config_t strip_config = {
         }
     };
 
-
-    led_strip_handle_t led_strip;
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
     return led_strip;
 }
@@ -88,4 +89,16 @@ void led_strip_blink(void)
 
     // Звільняємо ресурси драйвера (хоча ми ніколи сюди не дійдемо через безкінечний цикл)
     led_strip_del(strip);
+}
+
+void led_strip_set_color(led_strip_handle_t strip, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (!strip) {
+        printf("LED strip not initialized\n");
+        return;
+    }
+
+    // Встановлюємо колір для пікселя 0
+    led_strip_set_pixel(strip, 0, r, g, b);
+    led_strip_refresh(strip); // Оновлюємо стрічку, щоб зміни набрали чинності
 }
