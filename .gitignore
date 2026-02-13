@@ -1,3 +1,5 @@
 .vscode/settings.json
-my_proj/.vscode/settings.json
-my_proj/build
+.vscode/c_cpp_properties.json
+build
+sdkconfig.old
+sdkconfig
