@@ -9,6 +9,10 @@
 #include "my_joystick.h"
 #include "math.h"
 
+//WIFI
+#include "nvs_flash.h"
+
+
 #define TAG "APP"
 
 void cpu_load_task(void *pvParameters)
@@ -225,6 +229,8 @@ void joystick_task(void *pvParameters)
 
 void app_main(void)
 {
+
+    nvs_flash_init();
     static uint32_t task1_params[2] = {1000, 300};
     static uint32_t task2_params[2] = {2000, 500};
 
