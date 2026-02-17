@@ -69,7 +69,7 @@ void configure_joystick(joystick_callbacks_t callbacks) {
     };
 
     button_handle_t btn_handle = NULL;
-    esp_err_t err = iot_button_new_gpio_device(&btn_cfg, &btn_gpio_cfg, &btn_handle);
+    iot_button_new_gpio_device(&btn_cfg, &btn_gpio_cfg, &btn_handle);
 
     if (btn_handle == NULL) {
         ESP_LOGE(TAG, "Failed to create button");
