@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#include "freertos/event_groups.h" // Додано для EventGroup
+#include "freertos/event_groups.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "math.h"
@@ -42,8 +42,6 @@ void task_logger(void *pvParameters)
     while (1) {
         printf("\n===== SYSTEM STATUS (Every 5s) =====\n");
 
-        // Оскільки ви увімкнули показ ядра в меню-конфігураторі, 
-        // vTaskList сама додасть колонку з номером ядра або символом 'X' (якщо без прив'язки)
         printf("\n-- Task List (Name, State, Prio, Stack, Num, Core) --\n");
         vTaskList(task_list_buf);
         printf("%s\n", task_list_buf);
@@ -76,7 +74,9 @@ typedef enum {
     MODE_OFF       
 } app_mode_t;
 
-app_mode_t current_mode = MODE_JOYSTICK;
+app_mode_t current_mode;
+
+wifi_mode_t current_wifi_mode = WIFI_MODE_AP; // Початковий режим WiFi
 
 void task_led(void *pvParameters)
 {
@@ -84,50 +84,7 @@ void task_led(void *pvParameters)
     joystick_event_t received_event;
     int hue = 0;
 
-    while (1) {
-        if (xQueueReceive(joystick_queue, &received_event, portMAX_DELAY) && current_mode == MODE_JOYSTICK) {
-            int raw_x = received_event.x;
-            int raw_y = received_event.y;
-            uint8_t r = 0, g = 0, b = 0;
 
-            if (raw_x < 2048) {
-                int val = (raw_x * 255) / 2048; 
-                g = 255 - val; b = val; r = 0;
-            } else {
-                int val = ((raw_x - 2048) * 255) / 2048;
-                b = 255 - val; r = val; g = 0;
-            }
-
-            float brightness = (float)raw_y / 4095.0f;
-            r = (uint8_t)(r * brightness);
-            g = (uint8_t)(g * brightness);
-            b = (uint8_t)(b * brightness);
-
-            led_strip_set_pixel(led_strip, 0, r, g, b);
-            led_strip_refresh(led_strip);
-        }
-        else if (current_mode == MODE_RAINBOW) {
-            hue += 5; 
-            if (hue > 360) hue = 0;
-            float rad = hue * (M_PI / 180.0);
-            uint8_t r = (uint8_t)(sin(rad) * 127 + 128);
-            uint8_t g = (uint8_t)(sin(rad + 2*M_PI/3) * 127 + 128);
-            uint8_t b = (uint8_t)(sin(rad + 4*M_PI/3) * 127 + 128);
-            led_strip_set_pixel(led_strip, 0, r, g, b);
-            led_strip_refresh(led_strip);
-            vTaskDelay(pdMS_TO_TICKS(50));
-        }
-        else if (current_mode == MODE_WHITE) {
-            led_strip_set_pixel(led_strip, 0, 255, 255, 255);
-            led_strip_refresh(led_strip);
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
-        else if (current_mode == MODE_OFF) {
-            led_strip_set_pixel(led_strip, 0, 0, 0, 0);
-            led_strip_refresh(led_strip);
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
-    }
 }
 
 void on_joy_single_click(void) {
@@ -161,12 +118,49 @@ void joystick_task(void *pvParameters)
     configure_joystick(my_callbacks);
     joystick_event_t event;
 
+    int x = 0, y = 0;
+    int history_x = 0;
+    int history_y = 0;
+    int min_x = 4095;
+    int max_x = 0;
+    int min_y = 4095;
+    int max_y = 0;
+    for(int i = 0; i < 20; i++){
+        read_joystick(&x, &y);
+        history_x += x;
+        history_y += y;
+        if(min_x > x){
+            min_x = x;
+        } else if (max_x < x) {
+            max_x = x;
+        };
+        if(min_y > y){
+            min_y = y;
+        } else if (max_y < y) {
+            max_y = y;
+        };
+    }
+    history_x /= 20;
+    history_y /= 20;
+    min_x -= 100;
+    max_x += 100;
+    min_y -= 100;
+    max_y += 100;
+
     while (1) {
-       int x, y;
-       read_joystick(&x, &y); 
-       event.x = x; event.y = y;
-       xQueueOverwrite(joystick_queue, &event);
-       vTaskDelay(pdMS_TO_TICKS(50)); 
+        read_joystick(&x, &y); 
+       
+        if (x < min_x && current_wifi_mode != WIFI_MODE_AP) {
+            ESP_LOGI("JOY", "Switching to AP Mode...");
+            current_wifi_mode = WIFI_MODE_AP;
+            switch_wifi_mode(current_wifi_mode);
+        } 
+        else if (x > max_x && current_wifi_mode != WIFI_MODE_STA) {
+            ESP_LOGI("JOY", "Switching to STA Mode...");
+            current_wifi_mode = WIFI_MODE_STA;
+            switch_wifi_mode(current_wifi_mode);
+        }
+        vTaskDelay(pdMS_TO_TICKS(50)); 
     }
 }
 
@@ -182,8 +176,12 @@ void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
-    // Запуск WiFi (все в одній коректній функції)
-    wifi_init_combined();
+    // Initialize LED hardware and start status indicator timer
+    led_strip = configure_led();
+    init_led_status_timer();
+
+    // Запуск WiFi
+    wifi_init_combined(current_wifi_mode);
 
     // Запуск задач
     static uint32_t task1_params[2] = {1000, 300};
@@ -197,6 +195,8 @@ void app_main(void)
     joystick_queue = xQueueCreate(1, sizeof(joystick_event_t));
     if (joystick_queue == NULL) return;
 
-    xTaskCreate(task_led, "LED_Task", 4096, NULL, 1, NULL);
+    //xTaskCreate(task_led, "LED_Task", 4096, NULL, 1, NULL);
     xTaskCreate(joystick_task, "Joystick_Task", 4096, NULL, 1, NULL);
+    sntp_setup();
+    print_current_time();
 }

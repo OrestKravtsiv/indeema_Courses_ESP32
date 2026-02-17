@@ -3,6 +3,8 @@
 
 led_strip_handle_t led_strip = NULL;
 
+static wifi_led_status_t current_status = LED_STATE_WHITE;
+static bool blink_toggle = false;
 
 led_strip_handle_t configure_led(void)
 {
@@ -33,63 +35,6 @@ led_strip_handle_t configure_led(void)
 }
 
 
-void led_strip_test(void)
-{
-    // Ініціалізація драйвера для LED стрічки
-    led_strip_handle_t strip = configure_led();
-    if (!strip) {
-        printf("Failed to initialize LED strip\n");
-        return;
-    }
-
-    // Встановлюємо червоний колір (R=255, G=0, B=0)
-    led_strip_set_pixel(strip, 0, 255, 0, 0); // Піксель 0, R=255, G=0, B=0
-    led_strip_refresh(strip); // Оновлюємо стрічку, щоб зміни набрали чинності
-
-    // Затримка для демонстрації
-    vTaskDelay(pdMS_TO_TICKS(2000));
-
-    // Вимикаємо світло (R=0, G=0, B=0)
-    led_strip_set_pixel(strip, 0, 0, 0, 0); // Піксель 0, R=0, G=0, B=0
-    led_strip_refresh(strip); // Оновлюємо стрічку
-
-    // Звільняємо ресурси драйвера
-    led_strip_del(strip);
-}
-
-void led_strip_blink(void)
-{
-    led_strip_handle_t strip = configure_led();
-    if (!strip) {
-        printf("Failed to initialize LED strip\n");
-        return;
-    }
-
-    while (1) {
-        // Встановлюємо червоний колір
-        led_strip_set_pixel(strip, 0, 255, 0, 0);
-        led_strip_refresh(strip);
-        vTaskDelay(pdMS_TO_TICKS(500));
-
-        // Встановлюємо зелений колір
-        led_strip_set_pixel(strip, 0, 0, 255, 0);
-        led_strip_refresh(strip);
-        vTaskDelay(pdMS_TO_TICKS(500));
-
-        // Встановлюємо синій колір
-        led_strip_set_pixel(strip, 0, 0, 0, 255);
-        led_strip_refresh(strip);
-        vTaskDelay(pdMS_TO_TICKS(500));
-
-        // Вимикаємо світло
-        led_strip_set_pixel(strip, 0, 0, 0, 0);
-        led_strip_refresh(strip);
-        vTaskDelay(pdMS_TO_TICKS(500));
-    }
-
-    // Звільняємо ресурси драйвера (хоча ми ніколи сюди не дійдемо через безкінечний цикл)
-    led_strip_del(strip);
-}
 
 void led_strip_set_color(led_strip_handle_t strip, uint8_t r, uint8_t g, uint8_t b)
 {
@@ -101,4 +46,38 @@ void led_strip_set_color(led_strip_handle_t strip, uint8_t r, uint8_t g, uint8_t
     // Встановлюємо колір для пікселя 0
     led_strip_set_pixel(strip, 0, r, g, b);
     led_strip_refresh(strip); // Оновлюємо стрічку, щоб зміни набрали чинності
+}
+
+void set_led_status(wifi_led_status_t status) {
+    current_status = status;
+}
+
+static void led_timer_callback(void* arg) {
+    blink_toggle = !blink_toggle;
+    uint8_t r = 0, g = 0, b = 0;
+
+    switch (current_status) {
+        case LED_STATE_WHITE:       r=255; g=255; b=255; break;
+        case LED_STATE_YELLOW:      r=255; g=255; b=0;   break;
+        case LED_STATE_RED:         r=255; g=0;   b=0;   break;
+        case LED_STATE_GREEN_SOLID: r=0;   g=255; b=0;   break;
+        case LED_STATE_BLUE_SOLID:  r=0;   g=0;   b=255; break;
+        
+        case LED_STATE_GREEN_BLINK:
+            if (blink_toggle) { r=0; g=255; b=0; } break;
+        case LED_STATE_BLUE_BLINK:
+            if (blink_toggle) { r=0; g=0; b=255; } break;
+    }
+    led_strip_set_pixel(led_strip, 0, r, g, b);
+    led_strip_refresh(led_strip);
+}
+
+void init_led_status_timer(void) {
+    const esp_timer_create_args_t timer_args = {
+        .callback = &led_timer_callback,
+        .name = "led_wifi_timer"
+    };
+    esp_timer_handle_t timer_handle;
+    esp_timer_create(&timer_args, &timer_handle);
+    esp_timer_start_periodic(timer_handle, 500000); // 500ms
 }
