@@ -101,11 +101,11 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                 ESP_LOGI(TAG, "Client disconnected (MAC: "MACSTR", AID: %d, Remaining: %d)", MAC2STR(event->mac), event->aid, ap_connected_clients);
                 break;
             }
-            
+
             default:
                 break;
         }
-    } 
+    }
     
     // --- 2. ОБРОБКА МЕРЕЖЕВИХ ПОДІЙ (IP) ---
     else if (event_base == IP_EVENT) {
@@ -317,7 +317,7 @@ esp_err_t wifi_config_post_handler(httpd_req_t *req) {
     if (httpd_query_key_value(buf, "ssid", raw_ssid, sizeof(raw_ssid)) == ESP_OK &&
         httpd_query_key_value(buf, "pass", raw_pass, sizeof(raw_pass)) == ESP_OK) {
         
-        // ДЕКОДУВАННЯ: перетворюємо "+" на пробіли та обробляємо спецсимволи
+        
         url_decode(decoded_ssid, raw_ssid);
         url_decode(decoded_pass, raw_pass);
 

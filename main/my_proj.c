@@ -13,6 +13,7 @@
 #include "my_led.h"
 #include "my_joystick.h"
 #include "my_wifi.h" 
+#include "my_mqtt.h"
 
 
 #define TAG "APP"
@@ -199,4 +200,10 @@ void app_main(void)
     xTaskCreate(joystick_task, "Joystick_Task", 4096, NULL, 1, NULL);
     sntp_setup();
     print_current_time();
+
+    // Ініціалізація MQTT
+    if (mqtt_init() != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize MQTT client");
+    }
+
 }
