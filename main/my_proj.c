@@ -8,12 +8,16 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "math.h"
+#include <inttypes.h>
 
 // БІБЛІОТЕКИ
 #include "my_led.h"
 #include "my_joystick.h"
 #include "my_wifi.h" 
 #include "my_mqtt.h"
+
+// MQTT publish function
+extern esp_err_t mqtt_publish_data(const char *topic, const char *payload, int qos, bool retain);
 
 
 #define TAG "APP"
@@ -79,6 +83,34 @@ app_mode_t current_mode;
 
 wifi_mode_t current_wifi_mode = WIFI_MODE_AP; // Початковий режим WiFi
 
+void task_mqtt_telemetry(void *pvParameters)
+{
+    char payload[256];
+    const char *mode_names[] = {"JOYSTICK", "RAINBOW", "WHITE", "OFF"};
+    const char *wifi_mode_names[] = {"OFF", "STA", "AP", "APSTA"};
+
+    while (1) {
+        // Publish telemetry data every 10 seconds
+        vTaskDelay(pdMS_TO_TICKS(10000));
+        
+        // Get free heap
+        uint32_t free_heap = esp_get_free_heap_size();
+        
+        // Create JSON telemetry payload
+        snprintf(payload, sizeof(payload),
+                "{\"mode\":\"%s\",\"wifi_mode\":\"%s\",\"heap\":%" PRIu32 "}",
+                mode_names[current_mode],
+                wifi_mode_names[current_wifi_mode],
+                free_heap);
+        
+        // Publish telemetry
+        esp_err_t err = mqtt_publish_data("esp-lection/telemetry", payload, 1, false);
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "Failed to publish telemetry");
+        }
+    }
+}
+
 void task_led(void *pvParameters)
 {
     led_strip = configure_led();
@@ -108,6 +140,44 @@ void on_joy_long_press(void) {
         printf("Going to sleep...\n");
     }
 }
+
+// ============ MQTT COMMAND HANDLERS ============
+
+void mqtt_set_mode(int mode) {
+    if (mode >= MODE_JOYSTICK && mode <= MODE_OFF) {
+        current_mode = (app_mode_t)mode;
+        ESP_LOGI(TAG, "MQTT: Mode changed to %d", mode);
+    } else {
+        ESP_LOGW(TAG, "MQTT: Invalid mode value %d", mode);
+    }
+}
+
+void mqtt_set_led_color(int r, int g, int b) {
+    // Validate RGB values
+    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+        ESP_LOGW(TAG, "MQTT: Invalid RGB values - must be 0-255");
+        return;
+    }
+    
+    if (led_strip != NULL) {
+        led_strip_set_color(led_strip, (uint8_t)r, (uint8_t)g, (uint8_t)b);
+        ESP_LOGI(TAG, "MQTT: LED color set to RGB(%d, %d, %d)", r, g, b);
+    } else {
+        ESP_LOGE(TAG, "MQTT: LED strip not initialized");
+    }
+}
+
+void mqtt_get_status(void) {
+    const char *mode_names[] = {"JOYSTICK", "RAINBOW", "WHITE", "OFF"};
+    const char *wifi_mode_names[] = {"OFF", "STA", "AP", "APSTA"};
+    
+    ESP_LOGI(TAG, "=== MQTT Status Request ===");
+    ESP_LOGI(TAG, "Current Mode: %s", mode_names[current_mode]);
+    ESP_LOGI(TAG, "WiFi Mode: %s", wifi_mode_names[current_wifi_mode]);
+    ESP_LOGI(TAG, "Free Heap: %u bytes", (unsigned int)esp_get_free_heap_size());
+}
+
+// ============================================
 
 void joystick_task(void *pvParameters)
 {
@@ -205,5 +275,6 @@ void app_main(void)
     if (mqtt_init() != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize MQTT client");
     }
-
+    // Start MQTT telemetry task
+    xTaskCreate(task_mqtt_telemetry, "MQTT_Telemetry", 4096, NULL, 3, NULL);
 }
