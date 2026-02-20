@@ -1,0 +1,7 @@
+menu "My Project Configuration"
+config MY_PROJECT_FEATURE
+    bool "Enable My Project Feature"
+    default y
+    help
+      This option enables the My Project Feature, which provides additional functionality for the project.
+endmenu
