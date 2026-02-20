@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -86,12 +87,16 @@ wifi_mode_t current_wifi_mode = WIFI_MODE_AP; // Початковий режим
 void task_mqtt_telemetry(void *pvParameters)
 {
     char payload[256];
+    char topic[64];
     const char *mode_names[] = {"JOYSTICK", "RAINBOW", "WHITE", "OFF"};
     const char *wifi_mode_names[] = {"OFF", "STA", "AP", "APSTA"};
 
+    // Build telemetry topic from Kconfig prefix
+    snprintf(topic, sizeof(topic), "%s/telemetry", CONFIG_MQTT_TOPIC_PREFIX);
+
     while (1) {
-        // Publish telemetry data every 10 seconds
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        // Publish telemetry data at configured interval
+        vTaskDelay(pdMS_TO_TICKS(CONFIG_MQTT_TELEMETRY_INTERVAL * 1000));
         
         // Get free heap
         uint32_t free_heap = esp_get_free_heap_size();
@@ -104,7 +109,7 @@ void task_mqtt_telemetry(void *pvParameters)
                 free_heap);
         
         // Publish telemetry
-        esp_err_t err = mqtt_publish_data("esp-lection/telemetry", payload, 1, false);
+        esp_err_t err = mqtt_publish_data(topic, payload, 1, false);
         if (err != ESP_OK) {
             ESP_LOGW(TAG, "Failed to publish telemetry");
         }

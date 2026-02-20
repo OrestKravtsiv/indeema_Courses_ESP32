@@ -1,5 +1,6 @@
 
 #include "my_mqtt.h"
+#include "sdkconfig.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "my_led.h"
@@ -43,7 +44,7 @@ void mqtt_task(void *pvParameters)
     
     // Create command queue if it doesn't exist
     if (mqtt_command_queue == NULL) {
-        mqtt_command_queue = xQueueCreate(10, sizeof(mqtt_command_t));
+        mqtt_command_queue = xQueueCreate(CONFIG_MQTT_COMMAND_QUEUE_SIZE, sizeof(mqtt_command_t));
     }
 
     while (1) {
@@ -116,7 +117,7 @@ esp_err_t mqtt_publish_data(const char *topic, const char *payload, int qos, boo
 esp_err_t mqtt_init(void)
 {
     esp_mqtt_client_config_t mqtt_cfg = {
-        .broker.address.uri = "mqtt://broker.hivemq.com:1883",
+        .broker.address.uri = CONFIG_MQTT_BROKER_URI,
     };
 
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
@@ -153,10 +154,14 @@ static void esp_mqtt_event_handler(void *handler_args, esp_event_base_t base, in
             mqtt_status.connected = true;
             
             // Publish online status (retained)
-            mqtt_publish_data("esp-lection/status", "Orest_online", 1, true);
+            char status_topic[64];
+            snprintf(status_topic, sizeof(status_topic), "%s/status", CONFIG_MQTT_TOPIC_PREFIX);
+            mqtt_publish_data(status_topic, "Orest_online", 1, true);
             
             // Subscribe to command topic
-            msg_id = esp_mqtt_client_subscribe(client, "esp-lection/cmd", 0);
+            char cmd_topic[64];
+            snprintf(cmd_topic, sizeof(cmd_topic), "%s/cmd", CONFIG_MQTT_TOPIC_PREFIX);
+            msg_id = esp_mqtt_client_subscribe(client, cmd_topic, 0);
             ESP_LOGI(TAG, "Subscribed to esp-lection/cmd with msg_id=%d", msg_id);
             
             // Start the MQTT task for command processing
@@ -173,7 +178,7 @@ static void esp_mqtt_event_handler(void *handler_args, esp_event_base_t base, in
             if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
                 // WiFi is connected, schedule reconnect with backoff
                 ESP_LOGI(TAG, "WiFi connected - scheduling MQTT reconnect with backoff");
-                vTaskDelay(pdMS_TO_TICKS(2000)); // 2 second backoff for first attempt
+                vTaskDelay(pdMS_TO_TICKS(CONFIG_MQTT_RECONNECT_TIMEOUT_MS));
                 esp_mqtt_client_reconnect(client);
             } else {
                 // WiFi not connected, wait for WiFi to recover
@@ -200,7 +205,9 @@ static void esp_mqtt_event_handler(void *handler_args, esp_event_base_t base, in
             printf("DATA=%.*s\r\n", event->data_len, event->data);
             
             // Validate topic matches our expected command topic
-            if (strncmp(event->topic, "esp-lection/cmd", event->topic_len) == 0) {
+            char expected_topic[64];
+            snprintf(expected_topic, sizeof(expected_topic), "%s/cmd", CONFIG_MQTT_TOPIC_PREFIX);
+            if (strncmp(event->topic, expected_topic, event->topic_len) == 0) {
                 // Queue command for processing in mqtt_task
                 mqtt_command_t cmd;
                 
