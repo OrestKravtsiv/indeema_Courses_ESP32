@@ -74,3 +74,36 @@ config MY_PROJECT_FEATURE
     help
       This option enables the My Project Feature, which provides additional functionality for the project.
 endmenu
+
+menu "BLE Configuration"
+    config BLE_DEVICE_NAME
+        string "BLE Device Name"
+        default "ESP32-NimBLE"
+        help
+            Device name advertised over BLE GAP.
+
+    config BLE_DIS_MANUFACTURER
+        string "BLE Manufacturer Name"
+        default "Indeema"
+        help
+            Device Information Service (DIS) manufacturer name.
+
+    config BLE_DIS_MODEL_NUMBER
+        string "BLE Model Number"
+        default "ESP32S3"
+        help
+            Device Information Service (DIS) model number.
+
+    config BLE_DIS_SERIAL_NUMBER
+        string "BLE Serial Number"
+        default "00000001"
+        help
+            Device Information Service (DIS) serial number.
+
+    config BLE_BATTERY_LEVEL
+        int "Initial Battery Level (%)"
+        default 100
+        range 0 100
+        help
+            Initial Battery Service (BAS) level reported over BLE.
+endmenu
