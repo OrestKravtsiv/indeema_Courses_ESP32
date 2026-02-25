@@ -16,6 +16,7 @@
 #include "my_joystick.h"
 #include "my_wifi.h" 
 #include "my_mqtt.h"
+#include "my_ble.h"
 
 // MQTT publish function
 extern esp_err_t mqtt_publish_data(const char *topic, const char *payload, int qos, bool retain);
@@ -282,4 +283,9 @@ void app_main(void)
     }
     // Start MQTT telemetry task
     xTaskCreate(task_mqtt_telemetry, "MQTT_Telemetry", 4096, NULL, 3, NULL);
+
+    // Initialize BLE (NimBLE peripheral)
+    if (ble_init() != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize BLE");
+    }
 }

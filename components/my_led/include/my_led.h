@@ -1,3 +1,5 @@
+#pragma once
+
 #include "led_strip.h"
 #include "esp_timer.h"
 #define LED_STRIP_USE_DMA  0
