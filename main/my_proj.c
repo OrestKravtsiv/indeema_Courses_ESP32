@@ -18,6 +18,9 @@
 #include "my_mqtt.h"
 #include "my_ble.h"
 
+
+#include "driver/i2c_master.h"
+
 // MQTT publish function
 extern esp_err_t mqtt_publish_data(const char *topic, const char *payload, int qos, bool retain);
 

@@ -164,12 +164,9 @@ static int gatt_access_custom_cmd(uint16_t conn_handle, uint16_t attr_handle,
     if (ctxt->op != BLE_GATT_ACCESS_OP_WRITE_CHR) {
         return BLE_ATT_ERR_UNLIKELY;
     }
-
+    ESP_LOGI(TAG, "Custom LED command received, length=%d", OS_MBUF_PKTLEN(ctxt->om));
     uint8_t buf[4] = {0};
-    int len = os_mbuf_copydata(ctxt->om, 0, sizeof(buf), buf);
-    if (len < 1) {
-        return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
-    }
+    os_mbuf_copydata(ctxt->om, 0, sizeof(buf), buf);
 
     uint8_t opcode = buf[0];
     ESP_LOGI(TAG, "BLE Command received: 0x%02X", opcode);
@@ -184,9 +181,9 @@ static int gatt_access_custom_cmd(uint16_t conn_handle, uint16_t attr_handle,
             ESP_LOGI(TAG, "BLE CMD: LED OFF");
             break;
         case 0x03: // SET COLOR
-            if (len < 4) {
-                return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
-            }
+            // if (len < 4) {
+                // return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
+            // }
             g_led_status.led_on = true;
             g_led_status.r = buf[1];
             g_led_status.g = buf[2];
