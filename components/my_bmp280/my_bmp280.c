@@ -17,12 +17,10 @@ esp_err_t bmp280_init(bmp280_t *dev, i2c_bus_t *bus, uint8_t addr)
 
 esp_err_t bmp280_read_raw(bmp280_t *dev)
 {
-
     uint8_t reg = BMP280_REG_PRESS_MSB;
+    uint8_t data[6] = {0, 0, 0, 0, 0, 0};
 
-    uint8_t data[6] = {0 , 0, 0,0,0,0};
-
-    esp_err_t err = i2c_master_dev_read(dev->handle, BMP280_REG_PRESS_MSB, data, sizeof(data));
+    esp_err_t err = i2c_master_transmit_receive(dev->handle, &reg, 1, data, sizeof(data), -1);
     if (err != ESP_OK) {
         return err;
     }
@@ -35,9 +33,10 @@ esp_err_t bmp280_read_raw(bmp280_t *dev)
 
 esp_err_t bmp280_read_trim(bmp280_t *dev)
 {
+    uint8_t reg = BMP280_REG_TRIM_START;
     uint8_t data[24] = {0};
 
-    esp_err_t err = i2c_master_dev_read(dev->handle, BMP280_REG_TRIM_START, data, sizeof(data));
+    esp_err_t err = i2c_master_transmit_receive(dev->handle, &reg, 1, data, sizeof(data), -1);
     if (err != ESP_OK) {
         return err;
     }
@@ -84,6 +83,8 @@ esp_err_t bmp280_compensate(bmp280_t *dev)
     var1_p = (((int64_t)dev->calib_data.dig_P9) * (p_acc >> 13) * (p_acc >> 13)) >> 25;
     var2_p = (((int64_t)dev->calib_data.dig_P8) * p_acc) >> 19;
     dev->res_data.press = ((p_acc + var1_p + var2_p) >> 8) + (((int64_t)dev->calib_data.dig_P7) << 4);
+
+    return ESP_OK;
 }
 
 

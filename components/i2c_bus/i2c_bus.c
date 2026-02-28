@@ -1,9 +1,6 @@
 #include "i2c_bus.h"
 
-esp_err_t i2c_bus_init(i2c_bus_t *bus,
-                       i2c_port_t port,
-                       gpio_num_t sda,
-                       gpio_num_t scl)
+esp_err_t i2c_bus_init(i2c_bus_t *bus, i2c_port_t port, gpio_num_t sda, gpio_num_t scl)
 {
     if (!bus) return ESP_ERR_INVALID_ARG;
 
