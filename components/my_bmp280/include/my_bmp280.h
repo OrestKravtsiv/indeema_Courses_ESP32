@@ -1,6 +1,8 @@
 #include "i2c_bus.h"
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
 
-#define BMP280_I2C_ADDR 0x76
+#define BMP280_I2C_ADDR 0x77
 #define BMP280_REG_PRESS_MSB 0xF7
 #define BMP280_REG_TEMP_MSB 0xFA
 #define BMP280_REG_TRIM_START 0x88

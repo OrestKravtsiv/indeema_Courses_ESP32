@@ -1,0 +1,16 @@
+Debug: 6 5 log.c:262 handle_log_output_command(): set log_output to "log.txt"
+Debug: 7 5 options.c:348 parse_cmdline_args(): ARGV[0] = "C:\Users\PC\.espressif\tools\openocd-esp32\v0.12.0-esp32-20250707\openocd-esp32\bin\openocd.exe"
+Debug: 8 5 options.c:348 parse_cmdline_args(): ARGV[1] = "-c"
+Debug: 9 5 options.c:348 parse_cmdline_args(): ARGV[2] = "esp stub_log on"
+Debug: 10 5 options.c:348 parse_cmdline_args(): ARGV[3] = "-d3"
+Debug: 11 5 options.c:348 parse_cmdline_args(): ARGV[4] = "-l"
+Debug: 12 5 options.c:348 parse_cmdline_args(): ARGV[5] = "log.txt"
+Debug: 13 5 options.c:233 add_default_dirs(): bindir=/builds/idf/openocd-esp32/_build/../openocd-esp32/bin
+Debug: 14 5 options.c:234 add_default_dirs(): pkgdatadir=/builds/idf/openocd-esp32/_build/../openocd-esp32/share/openocd
+Debug: 15 5 options.c:235 add_default_dirs(): exepath=C:/Users/PC/.espressif/tools/openocd-esp32/v0.12.0-esp32-20250707/openocd-esp32/bin
+Debug: 16 5 options.c:236 add_default_dirs(): bin2data=../share/openocd
+Debug: 17 5 configuration.c:33 add_script_search_dir(): adding C:\Users\PC\.espressif\tools\openocd-esp32\v0.12.0-esp32-20250707\openocd-esp32\share\openocd\scripts
+Debug: 18 5 configuration.c:33 add_script_search_dir(): adding C:/Users/PC/AppData/Roaming/OpenOCD
+Debug: 19 5 configuration.c:33 add_script_search_dir(): adding C:/Users/PC/.espressif/tools/openocd-esp32/v0.12.0-esp32-20250707/openocd-esp32/bin/../share/openocd/site
+Debug: 20 5 configuration.c:33 add_script_search_dir(): adding C:/Users/PC/.espressif/tools/openocd-esp32/v0.12.0-esp32-20250707/openocd-esp32/bin/../share/openocd/scripts
+User : 21 5 command.c:529 command_run_line(): invalid command name "esp"

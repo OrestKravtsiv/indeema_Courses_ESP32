@@ -9,10 +9,22 @@ esp_err_t bmp280_init(bmp280_t *dev, i2c_bus_t *bus, uint8_t addr)
         .scl_speed_hz = 400000,
     };
 
-    dev->bus = bus;
+    esp_err_t err = i2c_master_bus_add_device(bus->handle, &cfg, &dev->handle);
+    if (err != ESP_OK) return err;
 
-    bmp280_read_trim(dev);
-    return i2c_master_bus_add_device(bus->handle, &cfg, &dev->handle);
+    // Налаштування: osrs_t=x2, osrs_p=x16, mode=normal
+    uint8_t ctrl_meas[2] = {0xF4, 0x57}; // 0b01010111
+    err = i2c_master_transmit(dev->handle, ctrl_meas, 2, 1000);
+    if (err != ESP_OK) return err;
+
+    // Налаштування: t_sb=0.5ms, filter=x4
+    uint8_t config[2] = {0xF5, 0x10}; // 0b00010000
+    err = i2c_master_transmit(dev->handle, config, 2, 1000);
+    if (err != ESP_OK) return err;
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+
+    return bmp280_read_trim(dev);
 }
 
 esp_err_t bmp280_read_raw(bmp280_t *dev)
@@ -28,19 +40,31 @@ esp_err_t bmp280_read_raw(bmp280_t *dev)
     dev->raw_data.press = ((int32_t)data[0] << 12) | ((int32_t)data[1] << 4) | (data[2] >> 4);
     dev->raw_data.temp = ((int32_t)data[3] << 12) | ((int32_t)data[4] << 4) | (data[5] >> 4);    
 
+    printf("=== BMP280 Raw Data ===\n");
+    printf("Raw Temperature: %ld\n", dev->raw_data.temp);
+    printf("Raw Pressure: %ld\n", dev->raw_data.press);
+
     return ESP_OK;
 }
 
 esp_err_t bmp280_read_trim(bmp280_t *dev)
 {
     uint8_t reg = BMP280_REG_TRIM_START;
-    uint8_t data[24] = {0};
+    uint8_t data[24];
 
+    printf("=== BMP280 Trim Data ===\n");
     esp_err_t err = i2c_master_transmit_receive(dev->handle, &reg, 1, data, sizeof(data), -1);
     if (err != ESP_OK) {
+        ESP_LOGE("BMP280", "Failed to read trim data: %s", esp_err_to_name(err));
         return err;
     }
 
+    printf("=== BMP280 Trim Data ===\n");
+    printf("data: ");
+    for (int i = 0; i < 24; i++) {
+        printf("%02x ", data[i]);
+    }
+    printf("\n");
     dev->calib_data.dig_T1 = (uint16_t)(data[0] | (data[1] << 8));
     dev->calib_data.dig_T2 = (int16_t)(data[2] | (data[3] << 8));
     dev->calib_data.dig_T3 = (int16_t)(data[4] | (data[5] << 8));
@@ -53,6 +77,9 @@ esp_err_t bmp280_read_trim(bmp280_t *dev)
     dev->calib_data.dig_P7 = (int16_t)(data[18] | (data[19] << 8));
     dev->calib_data.dig_P8 = (int16_t)(data[20] | (data[21] << 8));
     dev->calib_data.dig_P9 = (int16_t)(data[22] | (data[23] << 8));
+
+    printf("BMP280 Calibration Data:\n");
+    printf("dig_T1: %u\n", dev->calib_data.dig_T1);
 
     return ESP_OK;
 }
@@ -91,8 +118,18 @@ esp_err_t bmp280_compensate(bmp280_t *dev)
 esp_err_t bmp280_output(bmp280_t *dev)
 {
     bmp280_read_raw(dev);
-    bmp280_compensate(dev);
+    
+    printf("Raw temp:  %ld\n", dev->raw_data.temp);
+    printf("Raw press: %ld\n", dev->raw_data.press);
+    printf("dig_T1: %u, dig_T2: %d, dig_T3: %d\n",
+           dev->calib_data.dig_T1,
+           dev->calib_data.dig_T2,
+           dev->calib_data.dig_T3);
+    printf("dig_P1: %u, dig_P2: %d\n",
+           dev->calib_data.dig_P1,
+           dev->calib_data.dig_P2);
 
+    bmp280_compensate(dev);
     printf("Temperature: %.2f °C\n", dev->res_data.temp / 100.0);
     printf("Pressure: %.2f hPa\n", dev->res_data.press / 25600.0);
     return ESP_OK;

@@ -18,8 +18,22 @@
 #include "my_mqtt.h"
 #include "my_ble.h"
 
+// I2C та сенсори
+#include "i2c_bus.h"
+#include "my_bmp280.h"
+#include "my_aht20.h"
 
-#include "driver/i2c_master.h"
+// I2C конфігурація
+#define I2C_MASTER_SCL_IO    9
+#define I2C_MASTER_SDA_IO    8
+#define I2C_MASTER_NUM       I2C_NUM_0
+
+// Глобальні змінні для I2C та сенсорів
+static i2c_bus_t i2c_bus;
+static bmp280_t bmp280_sensor;
+static aht20_t aht20_sensor;
+
+
 
 // MQTT publish function
 extern esp_err_t mqtt_publish_data(const char *topic, const char *payload, int qos, bool retain);
@@ -66,6 +80,53 @@ void task_logger(void *pvParameters)
         printf("====================================\n");
 
         vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+// ============ SENSOR TASK ============
+void task_sensors(void *pvParameters)
+{
+    char payload[256];
+    char topic[64];
+    
+    snprintf(topic, sizeof(topic), "%s/sensors", CONFIG_MQTT_TOPIC_PREFIX);
+    
+    while (1) {
+        // Читаємо дані з BMP280
+        // bmp280_read_raw(&bmp280_sensor);
+        // bmp280_compensate(&bmp280_sensor);
+        
+        // float temperature_bmp = bmp280_sensor.res_data.temp / 100.0;
+        // float pressure = bmp280_sensor.res_data.press / 25600.0;
+        
+        // Читаємо дані з AHT20
+        aht20_read_raw(&aht20_sensor);
+        aht20_compensate(&aht20_sensor);
+        
+        float temperature_aht = aht20_sensor.res_data.temperature;
+        float humidity = aht20_sensor.res_data.humidity;
+        
+        // Виводимо в консоль
+        // printf("\n=== SENSOR DATA ===\n");
+        // printf("BMP280 - Temperature: %.2f °C, Pressure: %.2f hPa\n", 
+        //        temperature_bmp, pressure);
+        bmp280_output(&bmp280_sensor);
+
+        printf("AHT20  - Temperature: %.2f °C, Humidity: %.2f %%RH\n", 
+               temperature_aht, humidity);
+        printf("===================\n");
+        
+        // Публікуємо в MQTT
+        //snprintf(payload, sizeof(payload),
+        //        "{\"temp_bmp\":%.2f,\"pressure\":%.2f,\"temp_aht\":%.2f,\"humidity\":%.2f}",
+        //        temperature_bmp, pressure, temperature_aht, humidity);
+        
+        esp_err_t err = mqtt_publish_data(topic, payload, 1, false);
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "Failed to publish sensor data");
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(5000)); // Читаємо кожні 5 секунд
     }
 }
 
@@ -260,6 +321,19 @@ void app_main(void)
     led_strip = configure_led();
     init_led_status_timer();
 
+    ret = i2c_bus_init(&i2c_bus, I2C_MASTER_NUM, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO);
+    ESP_LOGI(TAG, "i2c_bus_init: %s, handle: %p", esp_err_to_name(ret), i2c_bus.handle);
+    ESP_ERROR_CHECK(ret);
+
+    ret = bmp280_init(&bmp280_sensor, &i2c_bus, BMP280_I2C_ADDR);
+    ESP_LOGI(TAG, "bmp280_init: %s", esp_err_to_name(ret));
+    ESP_ERROR_CHECK(ret);
+    
+
+    // [FIX] AHT20 init
+    ret = aht20_init(&aht20_sensor, &i2c_bus, AHT20_I2C_ADDR);
+    ESP_ERROR_CHECK(ret);
+
     // Запуск WiFi
     wifi_init_combined(current_wifi_mode);
 
@@ -277,6 +351,11 @@ void app_main(void)
 
     //xTaskCreate(task_led, "LED_Task", 4096, NULL, 1, NULL);
     xTaskCreate(joystick_task, "Joystick_Task", 4096, NULL, 1, NULL);
+
+    // Запуск задачі для читання сенсорів
+    xTaskCreate(task_sensors, "Sensors_Task", 4096, NULL, 3, NULL);
+    
+
     sntp_setup();
     print_current_time();
 

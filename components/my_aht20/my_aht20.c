@@ -132,13 +132,8 @@ esp_err_t aht20_read_raw(aht20_t *dev)
 
 esp_err_t aht20_compensate(aht20_t *dev)
 {
-    // Calculate humidity: (raw / 1048576) * 100
-    // Store as 0.1% RH units (multiply by 1000)
-    dev->res_data.humidity = (dev->raw_data.humidity * 1000) / 10485; // 1048576/100
-    
-    // Calculate temperature: (raw / 1048576) * 200 - 50
-    // Store as 0.1°C units (multiply by 10)
-    dev->res_data.temperature = ((dev->raw_data.temperature * 2000) / 10485) - 500;
+dev->res_data.humidity    = ((int64_t)dev->raw_data.humidity * 100) / 1048576;
+dev->res_data.temperature = (((int64_t)dev->raw_data.temperature * 100) / 524288) - 50;
     
     return ESP_OK;
 }
@@ -171,8 +166,8 @@ esp_err_t aht20_output(aht20_t *dev)
     aht20_compensate(dev);
     
     // Display results
-    printf("Temperature: %.1f °C\n", dev->res_data.temperature / 10.0);
-    printf("Humidity: %.1f %%RH\n", dev->res_data.humidity / 10.0);
+    printf("Temperature: %.1f °C\n", dev->res_data.temperature * 1.0);
+    printf("Humidity: %.1f %%RH\n", dev->res_data.humidity * 1.0);
     
     return ESP_OK;
 }
