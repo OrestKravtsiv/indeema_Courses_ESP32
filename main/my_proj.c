@@ -92,29 +92,11 @@ void task_sensors(void *pvParameters)
     snprintf(topic, sizeof(topic), "%s/sensors", CONFIG_MQTT_TOPIC_PREFIX);
     
     while (1) {
-        // Читаємо дані з BMP280
-        // bmp280_read_raw(&bmp280_sensor);
-        // bmp280_compensate(&bmp280_sensor);
-        
-        // float temperature_bmp = bmp280_sensor.res_data.temp / 100.0;
-        // float pressure = bmp280_sensor.res_data.press / 25600.0;
-        
-        // Читаємо дані з AHT20
-        aht20_read_raw(&aht20_sensor);
-        aht20_compensate(&aht20_sensor);
-        
-        float temperature_aht = aht20_sensor.res_data.temperature;
-        float humidity = aht20_sensor.res_data.humidity;
-        
-        // Виводимо в консоль
-        // printf("\n=== SENSOR DATA ===\n");
-        // printf("BMP280 - Temperature: %.2f °C, Pressure: %.2f hPa\n", 
-        //        temperature_bmp, pressure);
-        bmp280_output(&bmp280_sensor);
 
-        printf("AHT20  - Temperature: %.2f °C, Humidity: %.2f %%RH\n", 
-               temperature_aht, humidity);
-        printf("===================\n");
+        
+
+        bmp280_output(&bmp280_sensor);
+        aht20_output(&aht20_sensor);
         
         // Публікуємо в MQTT
         //snprintf(payload, sizeof(payload),

@@ -166,6 +166,7 @@ esp_err_t aht20_output(aht20_t *dev)
     aht20_compensate(dev);
     
     // Display results
+    printf("=== AHT20 Sensor Data ===\n");
     printf("Temperature: %.1f °C\n", dev->res_data.temperature * 1.0);
     printf("Humidity: %.1f %%RH\n", dev->res_data.humidity * 1.0);
     
