@@ -19,12 +19,6 @@
 #include "services/gatt/ble_svc_gatt.h"
 #include "esp_nimble_hci.h"
 
-#define TAG "BLE"
-
-
-
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,9 +56,15 @@ static const ble_uuid128_t g_custom_status_uuid = BLE_UUID128_INIT(
     0xf2, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
     0x34, 0x12, 0x78, 0x56, 0x34, 0x12, 0x78, 0x12);
 
+// Telemetry Characteristic UUID: 12345678-1234-5678-1234-56789abcdef3
+static const ble_uuid128_t g_custom_telemetry_uuid = BLE_UUID128_INIT(
+    0xf3, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
+    0x34, 0x12, 0x78, 0x56, 0x34, 0x12, 0x78, 0x12);
 
 
 esp_err_t ble_init(void);
+void ble_notify_esp_status(void);
+void ble_notify_telemetry(void);
 
 #ifdef __cplusplus
 }

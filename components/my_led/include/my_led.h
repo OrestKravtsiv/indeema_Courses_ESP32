@@ -26,4 +26,5 @@ led_strip_handle_t configure_led(void);
 
 void led_strip_set_color(led_strip_handle_t strip, uint8_t r, uint8_t g, uint8_t b);
 void set_led_status(wifi_led_status_t status);
+bool wifi_has_led_control(void);
 void init_led_status_timer(void);

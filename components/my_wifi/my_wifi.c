@@ -7,6 +7,10 @@
 EventGroupHandle_t s_wifi_event_group;
 static int s_retry_num = 0;
 
+// Keep track of created netifs to avoid recreating them
+static esp_netif_t *sta_netif = NULL;
+static esp_netif_t *ap_netif = NULL;
+
 static char  STA_WIFI_SSID[20] = "XXXXXXXXXXXXXXXXXXXXXX"; 
 static char  STA_WIFI_PASS[50] = "XXXXXXXXXXXXXXXXXXXXXX";
 
@@ -154,8 +158,8 @@ void wifi_init_combined(wifi_mode_t mode)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    if (mode & WIFI_MODE_STA) esp_netif_create_default_wifi_sta();
-    if (mode & WIFI_MODE_AP)  esp_netif_create_default_wifi_ap();
+    if (mode & WIFI_MODE_STA && sta_netif == NULL) sta_netif = esp_netif_create_default_wifi_sta();
+    if (mode & WIFI_MODE_AP && ap_netif == NULL)   ap_netif = esp_netif_create_default_wifi_ap();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -220,21 +224,15 @@ esp_err_t switch_wifi_mode(wifi_mode_t new_mode) {
     }
     vTaskDelay(pdMS_TO_TICKS(500)); // Даємо час на зупинку
 
-    // 4. Створюємо необхідний мережевий інтерфейс
-    if (new_mode == WIFI_MODE_STA || new_mode == WIFI_MODE_APSTA) {
+    // 4. Створюємо необхідний мережевий інтерфейс (тільки якщо не створений раніше)
+    if ((new_mode == WIFI_MODE_STA || new_mode == WIFI_MODE_APSTA) && sta_netif == NULL) {
         ESP_LOGI(TAG, "Creating STA network interface...");
-        esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
-        if (sta_netif == NULL) {
-            ESP_LOGW(TAG, "STA netif already exists");
-        }
+        sta_netif = esp_netif_create_default_wifi_sta();
     }
     
-    if (new_mode == WIFI_MODE_AP || new_mode == WIFI_MODE_APSTA) {
+    if ((new_mode == WIFI_MODE_AP || new_mode == WIFI_MODE_APSTA) && ap_netif == NULL) {
         ESP_LOGI(TAG, "Creating AP network interface...");
-        esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
-        if (ap_netif == NULL) {
-            ESP_LOGW(TAG, "AP netif already exists");
-        }
+        ap_netif = esp_netif_create_default_wifi_ap();
     }
 
     // 5. Змінюємо режим

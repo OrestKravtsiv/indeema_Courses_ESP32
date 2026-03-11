@@ -5,6 +5,7 @@ led_strip_handle_t led_strip = NULL;
 
 static wifi_led_status_t current_status = LED_STATE_WHITE;
 static bool blink_toggle = false;
+static bool wifi_controls_led = true;
 
 led_strip_handle_t configure_led(void)
 {
@@ -50,9 +51,24 @@ void led_strip_set_color(led_strip_handle_t strip, uint8_t r, uint8_t g, uint8_t
 
 void set_led_status(wifi_led_status_t status) {
     current_status = status;
+    if (status == LED_STATE_GREEN_SOLID) {
+        // Show green once, then release LED control
+        if (led_strip) {
+            led_strip_set_pixel(led_strip, 0, 0, 255, 0);
+            led_strip_refresh(led_strip);
+        }
+        wifi_controls_led = false;
+    } else {
+        wifi_controls_led = true;
+    }
+}
+
+bool wifi_has_led_control(void) {
+    return wifi_controls_led;
 }
 
 static void led_timer_callback(void* arg) {
+    if (!wifi_controls_led) return;
     blink_toggle = !blink_toggle;
     uint8_t r = 0, g = 0, b = 0;
 

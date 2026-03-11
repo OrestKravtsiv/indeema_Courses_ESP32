@@ -4,8 +4,7 @@ esp_err_t spi_bus_init(spi_bus_t *bus,
                        spi_host_device_t host,
                        gpio_num_t mosi,
                        gpio_num_t miso,
-                       gpio_num_t sclk,
-                       spi_dma_chan_t dma)
+                       gpio_num_t sclk)
 {
     if (!bus) return ESP_ERR_INVALID_ARG;
 
@@ -15,14 +14,14 @@ esp_err_t spi_bus_init(spi_bus_t *bus,
         .sclk_io_num = sclk,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = 4096,
+        .max_transfer_sz = 64,
     };
 
-    esp_err_t err = spi_bus_initialize(host, &cfg, dma);
+    esp_err_t err = spi_bus_initialize(host, &cfg, SPI_DMA_CH_AUTO);
     if (err != ESP_OK) return err;
 
     bus->host = host;
-    bus->dma  = dma;
+    bus->dma  = SPI_DMA_CH_AUTO;
     return ESP_OK;
 }
 

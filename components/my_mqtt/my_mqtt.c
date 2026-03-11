@@ -11,6 +11,7 @@
 // Forward declarations for MQTT command handlers from my_proj.c
 extern void mqtt_set_mode(int mode);
 extern void mqtt_set_led_color(int r, int g, int b);
+extern void mqtt_set_servo_angle(int angle);
 extern void mqtt_get_status(void);
 
 // MQTT Command Queue
@@ -78,6 +79,12 @@ void mqtt_task(void *pvParameters)
                     
                     if (r && g && b) {
                         mqtt_set_led_color(r->valueint, g->valueint, b->valueint);
+                    }
+                }
+                else if (strcmp(cmd_type->valuestring, "servo_angle") == 0) {
+                    cJSON *angle = cJSON_GetObjectItem(json, "angle");
+                    if (angle) {
+                        mqtt_set_servo_angle(angle->valueint);
                     }
                 }
                 else if (strcmp(cmd_type->valuestring, "status") == 0) {

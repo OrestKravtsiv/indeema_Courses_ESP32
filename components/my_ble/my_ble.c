@@ -9,6 +9,32 @@
 #include "esp_bt.h"
 #include "nimble/nimble_port.h"
 
+static const char *TAG = "BLE";
+
+// External command handlers from my_proj.c
+extern void cmd_set_servo_angle(uint16_t angle);
+extern void cmd_set_led_color(uint8_t r, uint8_t g, uint8_t b);
+
+// External telemetry structure
+typedef struct {
+    float temp_bmp;
+    float pressure;
+    float temp_aht;
+    float humidity;
+    float accel_x;
+    float accel_y;
+    float accel_z;
+    uint32_t free_heap;
+    uint8_t battery_level;
+    uint16_t servo_angle;
+    uint8_t led_r;
+    uint8_t led_g;
+    uint8_t led_b;
+    bool led_on;
+} telemetry_data_t;
+
+extern telemetry_data_t g_telemetry;
+
 
 // ============ GLOBAL STATE ============
 
@@ -29,6 +55,7 @@ static led_status_t g_led_status = {
 };
 
 static uint16_t g_custom_status_handle = 0;
+static uint16_t g_custom_telemetry_handle = 0;
 static uint16_t g_conn_handle = BLE_HS_CONN_HANDLE_NONE;
 
 // ============ BATTERY SERVICE ============
@@ -132,6 +159,97 @@ static void ble_notify_status(void)
     }
 }
 
+// ============ TELEMETRY CHARACTERISTIC ============
+
+static int gatt_access_telemetry(uint16_t conn_handle, uint16_t attr_handle,
+                                 struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    (void)conn_handle;
+    (void)attr_handle;
+    (void)arg;
+
+    if (ctxt->op != BLE_GATT_ACCESS_OP_READ_CHR) {
+        return BLE_ATT_ERR_UNLIKELY;
+    }
+
+    // Pack telemetry data into binary format (40 bytes)
+    // Layout: temp_bmp(4) + pressure(4) + temp_aht(4) + humidity(4) +
+    //         accel_x(4) + accel_y(4) + accel_z(4) +
+    //         free_heap(4) + servo_angle(2) + led_r(1) + led_g(1) + led_b(1) + led_on(1) + battery(1)
+    uint8_t payload[40];
+    int offset = 0;
+    
+    memcpy(&payload[offset], &g_telemetry.temp_bmp, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.pressure, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.temp_aht, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.humidity, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.accel_x, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.accel_y, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.accel_z, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.free_heap, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.servo_angle, 2); offset += 2;
+    payload[offset++] = g_telemetry.led_r;
+    payload[offset++] = g_telemetry.led_g;
+    payload[offset++] = g_telemetry.led_b;
+    payload[offset++] = g_telemetry.led_on ? 1 : 0;
+    payload[offset++] = g_telemetry.battery_level;
+    
+    return os_mbuf_append(ctxt->om, payload, sizeof(payload)) == 0
+               ? 0
+               : BLE_ATT_ERR_INSUFFICIENT_RES;
+}
+
+// Notify telemetry data (can be called periodically)
+void ble_notify_telemetry(void)
+{
+    if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE || g_custom_telemetry_handle == 0) {
+        return;
+    }
+
+    uint8_t payload[40];
+    int offset = 0;
+    
+    memcpy(&payload[offset], &g_telemetry.temp_bmp, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.pressure, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.temp_aht, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.humidity, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.accel_x, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.accel_y, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.accel_z, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.free_heap, 4); offset += 4;
+    memcpy(&payload[offset], &g_telemetry.servo_angle, 2); offset += 2;
+    payload[offset++] = g_telemetry.led_r;
+    payload[offset++] = g_telemetry.led_g;
+    payload[offset++] = g_telemetry.led_b;
+    payload[offset++] = g_telemetry.led_on ? 1 : 0;
+    payload[offset++] = g_telemetry.battery_level;
+
+    struct os_mbuf *om = ble_hs_mbuf_from_flat(payload, sizeof(payload));
+    if (om != NULL) {
+        ble_gatts_notify_custom(g_conn_handle, g_custom_telemetry_handle, om);
+    }
+}
+
+// Notify ESP status periodically (lighter notification with just basic status)
+void ble_notify_esp_status(void)
+{
+    if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE || g_custom_status_handle == 0) {
+        return;
+    }
+
+    // Basic status: free_heap(4) + battery(1) + led_on(1) + servo_angle(2)
+    uint8_t payload[8];
+    memcpy(&payload[0], &g_telemetry.free_heap, 4);
+    payload[4] = g_telemetry.battery_level;
+    payload[5] = g_telemetry.led_on ? 1 : 0;
+    memcpy(&payload[6], &g_telemetry.servo_angle, 2);
+
+    struct os_mbuf *om = ble_hs_mbuf_from_flat(payload, sizeof(payload));
+    if (om != NULL) {
+        ble_gatts_notify_custom(g_conn_handle, g_custom_status_handle, om);
+    }
+}
+
 static int gatt_access_custom_status(uint16_t conn_handle, uint16_t attr_handle,
                                      struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
@@ -181,14 +299,19 @@ static int gatt_access_custom_cmd(uint16_t conn_handle, uint16_t attr_handle,
             ESP_LOGI(TAG, "BLE CMD: LED OFF");
             break;
         case 0x03: // SET COLOR
-            // if (len < 4) {
-                // return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
-            // }
             g_led_status.led_on = true;
             g_led_status.r = buf[1];
             g_led_status.g = buf[2];
             g_led_status.b = buf[3];
+            cmd_set_led_color(buf[1], buf[2], buf[3]);
             ESP_LOGI(TAG, "BLE CMD: LED COLOR RGB(%u, %u, %u)", buf[1], buf[2], buf[3]);
+            break;
+        case 0x04: // SET SERVO ANGLE
+            {
+                uint16_t angle = (buf[1] << 8) | buf[2];
+                cmd_set_servo_angle(angle);
+                ESP_LOGI(TAG, "BLE CMD: SERVO ANGLE %u", angle);
+            }
             break;
         default:
             ESP_LOGW(TAG, "BLE CMD: Unknown opcode 0x%02X", opcode);
@@ -270,6 +393,12 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
                 .access_cb = gatt_access_custom_status,
                 .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                 .val_handle = &g_custom_status_handle,
+            },
+            {
+                .uuid = &g_custom_telemetry_uuid.u,
+                .access_cb = gatt_access_telemetry,
+                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+                .val_handle = &g_custom_telemetry_handle,
             },
             {0}
         },
